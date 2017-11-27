@@ -1,0 +1,16 @@
+{
+  "name": "Dungeon",
+  "version": "1.0.0",
+  "description": "Project",
+  "main": "index.js",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chris Boschert",
+  "license": "",
+  "dependencies": {
+    "react-scripts": "^1.0.14"
+  }
+}

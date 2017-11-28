@@ -24,8 +24,11 @@ export default class Game {
     this.weapons = [];
     this.armor = [];
     this.item;
-    this.roomN;
     this.bossCount = 3;
+    this.roomN = {
+      roomX: 1,
+      roomY: 4
+    }
     this.equip = {
       weapon: 1,
       armor: 0,
@@ -41,12 +44,62 @@ export default class Game {
   }
   score() {
     var pdata = this.player.getScore();
-    var life = pdata.life;
-    var health = pdata.health;
-    var message = document.getElementById("message");
-    message.textContent = "Lives: " + life + " Health: " + health;
-    var message2 = document.getElementById("message2");
-    message2.textContent = "Power: " + this.equip.weapon + " Armor: " + this.equip.armor;
+    var temp = ["message", "phealth", "pdamage", "parmor"];
+    var temp2 = ["Lives: " + pdata.life, "Health: " + pdata.health, "Power: " + this.equip.weapon, "Armor: " + this.equip.armor];
+
+    for(var i = 0; i<temp.length; i++) {
+      document.getElementById(temp[i]).textContent = temp2[i];
+    }
+
+    this.monsters.forEach((mon) => {
+      var mdata = mon.getStats();
+      document.getElementById("mhealth").textContent = "Enemy Health: " + mdata.health;
+      document.getElementById("mdamage").textContent = "Enemy Damage: " + mdata.damage;
+    });
+
+  }
+  attackEnemy() {
+    var ppos = this.player.getPosition();
+    var damage = this.player.getDamage();
+    this.monsters.forEach((mon) => {
+      if((ppos.y === mon.y && ppos.x === mon.x-1) ||
+         (ppos.y === mon.y && ppos.x === mon.x+1) ||
+         (ppos.y === mon.y-1 && ppos.x === mon.x) ||
+         (ppos.y === mon.y+1 && ppos.x === mon.x)
+        ) {
+        var dead = mon.dealDamage(damage);
+        if(dead) {
+          this.monsters.pop();
+          this.clearEdata();
+        }
+
+      }
+    });
+  }
+  clearEdata() {
+    document.getElementById("mhealth").textContent = "";
+    document.getElementById("mdamage").textContent = "";
+  }
+  itemPickup() {
+    if(this.item) {
+    var idata = this.item.getData();
+    var ppos = this.player.getPosition();
+
+      if(idata.x === ppos.x && idata.y === ppos.y) {
+        if(idata.type === "armor") {
+          if(this.equip.armor < idata.value) this.equip.armor = idata.value;
+          this.armor.pop();
+          this.player.setArmor(this.equip.armor);
+        }
+        else {
+          if(this.equip.weapon < idata.value) this.equip.weapon = idata.value;
+          this.weapons.pop();
+          this.player.setWeapon(this.equip.weapon);
+        }
+        this.item.delete(this.roomN);
+        this.item.undefined;
+      }
+    }
   }
   handleKeyDown(event) {
     event.preventDefault();
@@ -72,35 +125,10 @@ export default class Game {
           this.input.dY = 1;
           break;
         case 'z':
-          var ppos = this.player.getPosition();
-          var damage = this.player.getDamage();
-          this.monsters.forEach((mon) => {
-            if((mon.x-ppos.x < 2 && mon.x-ppos.x > -2) && (mon.y-ppos.y < 2 && mon.y-ppos.y > -2)) {
-              var dead = mon.dealDamage(damage);
-              if(dead) this.monsters.pop();
-            }
-          });
+            this.attackEnemy();
           break;
         case 'x':
-          if(this.item) {
-          var idata = this.item.getData();
-          var ppos = this.player.getPosition();
-          var roomN = this.room.getRoom();
-          if(idata.x === ppos.x && idata.y === ppos.y) {
-            if(idata.type === "armor") {
-              if(this.equip.armor < idata.value) this.equip.armor = idata.value;
-              this.armor.pop();
-              this.player.setArmor(this.equip.armor);
-            }
-            else {
-              if(this.equip.weapon < idata.value) this.equip.weapon = idata.value;
-              this.weapons.pop();
-              this.player.setWeapon(this.equip.weapon);
-            }
-            this.item.delete(roomN);
-            this.item.undefined;
-          }
-        }
+            this.itemPickup();
           break;
       }
   }
@@ -109,21 +137,18 @@ export default class Game {
         switch(event.key){
           case 'a':
           case 'ArrowLeft':
-            this.input.dX = 0;
-            this.input.dY = 0;
+            if(this.input.dX === -1) this.input.dX = 0;
           case 'd':
           case 'ArrowRight':
-            this.input.dX = 0;
+            if(this.input.dX === 1) this.input.dX = 0;
             this.input.dY = 0;
           case 'w':
           case 'ArrowUp':
-            this.input.dX = 0;
-            this.input.dY = 0;
+            if(this.input.dY === -1) this.input.dY = 0;
             break;
           case 's':
           case 'ArrowDown':
-            this.input.dX = 0;
-            this.input.dY = 0;
+            if(this.input.dY === 1) this.input.dY = 0;
             break;
         }
   }
@@ -148,9 +173,9 @@ export default class Game {
         break;
     }
   }
-  monsterC(roomN) {
-    var x = roomN.roomX;
-    var y = roomN.roomY;
+  monsterC() {
+    var x = this.roomN.roomX;
+    var y = this.roomN.roomY;
     this.monsters.forEach((mon) => {
       this.monsters.pop();
     });
@@ -164,9 +189,9 @@ export default class Game {
           });
     }
   }
-  itemC(roomN){
-    var x = roomN.roomX;
-    var y = roomN.roomY;
+  itemC(){
+    var x = this.roomN.roomX;
+    var y = this.roomN.roomY;
     var z;
 
     this.armor.forEach((arm) => {
@@ -194,28 +219,40 @@ export default class Game {
         this. item = z;
     }
   }
-  update() {
-    var roomN = this.room.getRoom();
-    var roomN2 = this.player.update(this.input, roomN, this.monsters);
-
-    if (roomN.roomX !== roomN2.roomX || roomN.roomY !== roomN2.roomY) {
-      this.room.update(roomN2);
-      this.monsterC(roomN2);
-      this.itemC(roomN2);
+  respawn() {
+    this.clearEdata();
+    this.roomN = {
+      roomX: 1,
+      roomY: 4
     }
-
+    this.monsters = [];
+    this.weapons = [];
+    this.armor = [];
+    this.room.update(this.roomN);
+  }
+  monsterD() {
     var ppos = this.player.getPosition();
     this.monsters.forEach((mon) => {
       var damage = mon.update(ppos, this.room.getRoom());
       var respawn = this.player.dealDamage(damage);
       if(respawn) {
-        this.tilemap = new Tilemap(data);
-        this.room = new Room(1,4, this.tilemap, this.ctx);
-        this.monsters = [];
-        this.weapons = [];
-        this.armor = [];
+        this.respawn();
       }
     });
+  }
+  update() {
+    var roomN2 = this.player.update(this.input, this.roomN, this.monsters);
+
+    if (this.roomN.roomX !== roomN2.roomX || this.roomN.roomY !== roomN2.roomY) {
+      this.clearEdata();
+      this.roomN = roomN2;
+      this.room.update(this.roomN);
+      this.monsterC();
+      this.itemC();
+    }
+
+    this.monsterD();
+
     this.score();
 
   }

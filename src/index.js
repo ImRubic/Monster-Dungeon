@@ -1,4 +1,5 @@
 import Game from './game.js';
+import './index.css';
 
 var message = document.createElement('div');
 message.id = "message";

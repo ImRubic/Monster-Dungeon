@@ -45,6 +45,8 @@ export default class Game {
     var health = pdata.health;
     var message = document.getElementById("message");
     message.textContent = "Lives: " + life + " Health: " + health;
+    var message2 = document.getElementById("message2");
+    message2.textContent = "Power: " + this.equip.weapon + " Armor: " + this.equip.armor;
   }
   handleKeyDown(event) {
     event.preventDefault();

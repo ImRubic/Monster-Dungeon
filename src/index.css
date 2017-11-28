@@ -17,4 +17,18 @@ canvas {
 
 #message {
   color: white;
+  top: 30px;
+  left: 5px;
+  width: 100%;
+  font: arial;
+  font-size: 20px;
+}
+
+#message2 {
+  color: white;
+  top: 200px;
+  left: 5px;
+  width: 100%;
+  font: arial;
+  font-size: 20px;
 }

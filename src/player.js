@@ -70,20 +70,20 @@ export default class Player {
       this.y = this.y+dY;
 
       //Moves player to the enterance of the next room.
-      if(this.x === 0) {
-        this.x = 9;
+      if(this.x === -1) {
+        this.x = 10;
         return {roomX: rX-1, roomY: rY};
       }
-      else if(this.x === 10) {
-        this.x = 1;
+      else if(this.x === 11) {
+        this.x = 0;
         return {roomX: rX+1, roomY: rY};
       }
-      else if(this.y === 0) {
-        this.y = 9;
+      else if(this.y === -1) {
+        this.y = 10;
         return {roomX: rX, roomY: rY-1};
       }
-      else if(this.y === 10) {
-        this.y = 1;
+      else if(this.y === 11) {
+        this.y = 0;
         return {roomX: rX, roomY: rY+1};
       }
     }

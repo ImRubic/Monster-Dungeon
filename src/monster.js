@@ -34,6 +34,9 @@ export default class Monster {
     }
     return false;
   }
+  checkBlock(y, x) {
+    return this.data2[((this.y+y)+(11*this.rY)) * 100 + ((this.x+x)+(11*this.rX))] === 0;
+  }
   update(player, roomN) {
     this.rX = roomN.roomX;
     this.rY = roomN.roomY;
@@ -43,17 +46,17 @@ export default class Monster {
       this.ctx.save();
       this.tilemap.renderTile(this.ctx, this.x, this.y, this.data[((this.y)+(11*this.rY)) * 100 + ((this.x)+(11*this.rX))]);
       this.ctx.restore();
-
-      if(player.y < this.y && player.x !== this.x && this.data2[((this.y-1)+(11*this.rY)) * 100 + ((this.x)+(11*this.rX))] === 0) {
+      if(player.y < this.y && (player.x !== this.x || player.y<this.y-1) && this.checkBlock(-1,0)) {
+      //if(player.y < this.y && player.x !== this.x && this.checkBlock(-1,0)) {
         this.y--;
       }
-      else if (player.y > this.y && player.x !== this.x && this.data2[((this.y+1)+(11*this.rY)) * 100 + ((this.x)+(11*this.rX))] === 0) {
+      else if (player.y > this.y && (player.x !== this.x || player.y>this.y+1) && this.checkBlock(1,0)) {
         this.y++;
       }
-      else if (player.x < this.x-1 && this.data2[((this.y)+(11*this.rY)) * 100 + ((this.x-1)+(11*this.rX))] === 0) {
+      else if (player.x < this.x && (player.y !== this.y || player.x<this.x-1) && this.checkBlock(0,-1)) {
         this.x--;
       }
-      else if (player.x > this.x+1 && this.data2[((this.y)+(11*this.rY)) * 100 + ((this.x+1)+(11*this.rX))] === 0) {
+      else if (player.x > this.x && (player.y !== this.y || player.x>this.x+1) && this.checkBlock(0,1)) {
         this.x++;
       }
       else if((player.y === this.y && player.x === this.x-1) ||

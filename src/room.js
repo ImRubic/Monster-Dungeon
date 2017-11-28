@@ -26,6 +26,6 @@ export default class Room {
     setTimeout(() => {
       this.tilemap.renderFloor(this.ctx, this.roomX, this.roomY);
       this.tilemap.renderWall(this.ctx, this.roomX, this.roomY);
-    }, 100)
+    }, 1)
   }
 }

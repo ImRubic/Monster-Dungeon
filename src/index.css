@@ -31,7 +31,6 @@ message {
   color: white;
   top: 20px;
   left: 50px;
-  width: 100%;
   font: arial;
   font-size: 20px;
 }
@@ -50,11 +49,9 @@ p {
 #monster {
   top: 150px;
   left: 530px;
-  width: 100%;
 }
 
 #player {
   top: 50px;
   left: 530px;
-  width: 100%;
 }

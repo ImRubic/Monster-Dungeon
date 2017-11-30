@@ -16,7 +16,7 @@ export default class Game {
       dX: 0,
       dY: 0,
     };
-
+    this.over = false;
     this.tilemap = new Tilemap(data);
     this.player = new Player(1,1, this.tilemap, this.ctx);
     this.room = new Room(1,4, this.tilemap, this.ctx);
@@ -33,11 +33,19 @@ export default class Game {
       weapon: 1,
       armor: 0,
     }
+    this.aSpeed = 10;
+    this.cd = 0;
 
-    this.score();
+    this.data2 = new Uint16Array(data.layers[1].data);
+    setTimeout(() => {
+      this.score();
+    }, 10);
+
+    document.getElementById("message2").textContent = "Find the key to the castle";
 
     window.onkeydown = this.handleKeyDown.bind(this);
     window.onkeyup =  this.handleKeyUp.bind(this);
+
 
     this.loop = this.loop.bind(this);
     this.interval = setInterval(this.loop, 100);
@@ -67,18 +75,24 @@ export default class Game {
          (ppos.y === mon.y-1 && ppos.x === mon.x) ||
          (ppos.y === mon.y+1 && ppos.x === mon.x)
         ) {
-        var dead = mon.dealDamage(damage);
-        if(dead) {
-          this.monsters.pop();
-          this.clearEdata();
-        }
+          if(this.cd === 0) {
+            this.cd = this.aSpeed;
+            var dead = mon.dealDamage(damage);
+            if(dead) {
+              this.clearEdata();
+              if(mon.type === "boss") this.bossDefeat();
+              this.monsters.pop();
+              this.cd = 0;
 
+            }
+          } else this.cd--;
       }
     });
   }
   clearEdata() {
     document.getElementById("mhealth").textContent = "";
     document.getElementById("mdamage").textContent = "";
+    document.getElementById("message2").textContent = "";
   }
   itemPickup() {
     if(this.item) {
@@ -156,17 +170,23 @@ export default class Game {
 
   }
   gameOver() {
-
+    document.getElementById("message2").textContent = "You lost all your lives! Game Over!";
+    this.over= true;
   }
   gameWon() {
-
+    document.getElementById("message2").textContent = "You won!";
+    this.over = true;
   }
   bossDefeat() {
     this.bossCount--;
     switch(this.bossCount) {
       case 2:
+        this.tilemap.boss1();
+        document.getElementById("message2").textContent = "You've obtained a key to the castle!";
         break;
       case 1:
+      this.tilemap.boss2();
+      document.getElementById("message2").textContent = "You've obtained a key to the dungeon!";
         break;
       case 0:
         this.gameWon();
@@ -229,6 +249,8 @@ export default class Game {
     this.weapons = [];
     this.armor = [];
     this.room.update(this.roomN);
+    document.getElementById("message2").textContent = "You died!";
+    if(this.player.getScore().life === 0) this.gameOver();
   }
   monsterD() {
     var ppos = this.player.getPosition();
@@ -258,21 +280,22 @@ export default class Game {
   }
   render() {
     this.ctx.save();
-    this.monsters.forEach((mon) => {
-      mon.render();
-    });
     this.armor.forEach((arm) => {
       arm.render();
     });
     this.weapons.forEach((weap) => {
       weap.render();
     });
+    this.monsters.forEach((mon) => {
+      mon.render();
+    });
     this.player.render();
     this.ctx.restore();
   }
   loop() {
-    this.update();
-    this.render();
-
+    if(!this.over) {
+      this.update();
+      this.render();
+    }
   }
 }

@@ -6,7 +6,7 @@ export default class Player {
     this.y = y;
     this.ctx = ctx;
     this.tilemap = tilemap;
-    this.health = 10;
+    this.health = 1000;
     this.life = 3;
     this.weaponPower = 1;
     this.armor = 0;

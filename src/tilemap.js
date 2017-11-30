@@ -41,6 +41,16 @@ export default class Tilemap {
   getData2() {
     return this.data2;
   }
+  boss1() {
+    this.data2[(0+(11*3)) * this.mapWidth + (4+(11*1))] = 0;
+    this.data2[(0+(11*3)) * this.mapWidth + (5+(11*1))] = 0;
+    this.data2[(0+(11*3)) * this.mapWidth + (6+(11*1))] = 0;
+  }
+  boss2() {
+    this.data2[(4+(11*0)) * this.mapWidth + (10+(11*5))] = 0;
+    this.data2[(5+(11*0)) * this.mapWidth + (10+(11*5))] = 0;
+    this.data2[(6+(11*0)) * this.mapWidth + (10+(11*5))] = 0;
+  }
 
   renderFloor(ctx, roomX, roomY) {
     var rX = roomX;

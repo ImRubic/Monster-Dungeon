@@ -1,4 +1,5 @@
 import Tilemap from './tilemap';
+import monster from './monsters.json';
 
 export default class Monster {
   constructor(mon, tilemap, ctx) {
@@ -10,6 +11,7 @@ export default class Monster {
     this.health = mon.health;
     this.damage = mon.damage;
     this.type = mon.type;
+    this.speed = mon.speed;
 
     this.tilemap = tilemap;
     this.ctx = ctx;
@@ -18,7 +20,7 @@ export default class Monster {
     this.tileN = mon.id;
 
 
-    this.cd = 10;
+    this.cd = this.speed;
   }
   getStats() {
     return {health: this.health, damage: this.damage};
@@ -29,7 +31,7 @@ export default class Monster {
   dealDamage(damage) {
     this.health -= damage;
     if(this.health <= 0) {
-      this.alive = 0;
+      monster.monsters0[this.rY][this.rX] = [];
       this.ctx.save();
       this.tilemap.renderTile(this.ctx, this.x, this.y, this.data[((this.y)+(11*this.rY)) * 100 + ((this.x)+(11*this.rX))]);
       this.ctx.restore();
@@ -59,10 +61,10 @@ export default class Monster {
             (player.y === this.y-1 && player.x === this.x) ||
             (player.y === this.y+1 && player.x === this.x)
     ) {
-      this.cd = 10;
+      this.cd = this.speed;
       return this.damage;
     }
-    this.cd = 10;
+    this.cd = this.speed;
   }
   update(player, roomN) {
     this.rX = roomN.roomX;

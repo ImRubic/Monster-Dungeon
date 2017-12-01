@@ -23,6 +23,7 @@ export default class Game {
     this.monsters = [];
     this.weapons = [];
     this.armor = [];
+    this.potion;
     this.item;
     this.bossCount = 3;
     this.roomN = {
@@ -79,6 +80,7 @@ export default class Game {
             this.cd = this.aSpeed;
             var dead = mon.dealDamage(damage);
             if(dead) {
+              this.dropPotion(mon);
               this.clearEdata();
               if(mon.type === "boss") this.bossDefeat();
               this.monsters.pop();
@@ -89,29 +91,57 @@ export default class Game {
       }
     });
   }
+  dropPotion(mon) {
+    if(!this.item) {
+      var rand = Math.floor(Math.random() * (100 - 1)) + 1;
+      rand += mon.damage;
+      if(rand > 74) {
+        if(rand > 90) var z = new Item(item.potion2, this.tilemap, this.ctx, "potion");
+        else var z = new Item(item.potion, this.tilemap, this.ctx, "potion");
+        this.potion = z;
+        this.item = z;
+        this.potion.setLocation(mon.x, mon.y);
+        this.potion.render();
+      }
+    }
+  }
   clearEdata() {
     document.getElementById("mhealth").textContent = "";
     document.getElementById("mdamage").textContent = "";
     document.getElementById("message2").textContent = "";
+    document.getElementById("message3").textContent = "";
   }
   itemPickup() {
     if(this.item) {
     var idata = this.item.getData();
     var ppos = this.player.getPosition();
+    var text = "";
 
       if(idata.x === ppos.x && idata.y === ppos.y) {
         if(idata.type === "armor") {
-          if(this.equip.armor < idata.value) this.equip.armor = idata.value;
+          if(this.equip.armor < idata.value) {
+            this.equip.armor = idata.value;
+            text = "You picked up a stronger piece of armor!";
+          } else text = "You picked up a weaker piece of armor and discarded it!";
           this.armor.pop();
           this.player.setArmor(this.equip.armor);
         }
-        else {
-          if(this.equip.weapon < idata.value) this.equip.weapon = idata.value;
+        else if(idata.type === "weapon"){
+          if(this.equip.weapon < idata.value) {
+            this.equip.weapon = idata.value;
+            text = "You picked up a stronger weapon!";
+          } else text = "You picked up a weaker weapon and discarded it!";
           this.weapons.pop();
           this.player.setWeapon(this.equip.weapon);
         }
+        else if(idata.type === "potion"){
+          text = "You drank a poition and gained " + this.potion.value + " health!";
+          this.player.drinkPotion(this.potion.value);
+          this.potion = undefined;
+        }
+        document.getElementById("message3").textContent = text;
         this.item.delete(this.roomN);
-        this.item.undefined;
+        this.item = undefined;
       }
     }
   }
@@ -220,6 +250,7 @@ export default class Game {
     this.weapons.forEach((weap) => {
       this.weapons.pop();
     });
+    this.potion = undefined;
 
     if (item.item0[y][x][0] !== null) {
       var id = item.item0[y][x][0];
@@ -236,7 +267,11 @@ export default class Game {
               this.armor.push(z);
             }
           });
-        this. item = z;
+      if(id === item.potion2.id) {
+        z = new Item(item.potion2, this.tilemap, this.ctx, "potion");
+        this.potion = z;
+      }
+        this.item = z;
     }
   }
   respawn() {
@@ -286,6 +321,7 @@ export default class Game {
     this.weapons.forEach((weap) => {
       weap.render();
     });
+    if(this.potion) this.potion.render();
     this.monsters.forEach((mon) => {
       mon.render();
     });

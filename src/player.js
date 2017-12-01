@@ -23,6 +23,9 @@ export default class Player {
   getDamage() {
     return this.weaponPower;
   }
+  drinkPotion(value) {
+    this.health += value;
+  }
   setWeapon(value) {
     this.weaponPower = value;
   }

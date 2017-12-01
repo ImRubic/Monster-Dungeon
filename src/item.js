@@ -19,8 +19,15 @@ export default class Item {
   getData() {
     return {x: this.x, y: this.y, type: this.type, value: this.value};
   }
-  update() {
+  setLocation(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+  update(roomN) {
+    var x = roomN.roomX;
+    var y = roomN.roomY;
 
+    item.item0[y][x] = [this.tileN];
   }
   delete(roomN) {
     var x = roomN.roomX;

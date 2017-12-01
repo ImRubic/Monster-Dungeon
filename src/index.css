@@ -39,11 +39,30 @@ p {
   position: absolute;
   word-wrap: break-word;
   color: white;
-  top: 560px;
-  left: 50px;
+  width: 700px;
+  font: arial;
+  font-size: 20px;
+}
+
+h1 {
+  position: absolute;
+  word-wrap: break-word;
+  color: white;
   width: 400px;
   font: arial;
   font-size: 20px;
+  top: 50px;
+  left: 800px;
+}
+
+#message2 {
+  top: 560px;
+  left: 50px;
+}
+
+#message3 {
+  top: 600px;
+  left: 50px;
 }
 
 #monster {
@@ -54,4 +73,9 @@ p {
 #player {
   top: 50px;
   left: 530px;
+}
+
+#controls {
+  top: 75px;
+  left: 760px;
 }

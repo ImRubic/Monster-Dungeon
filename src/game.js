@@ -54,9 +54,11 @@ export default class Game {
   }
   menuLoad() {
     this.ctx.save();
-    this.ctx.font = "10px Arial";
+    this.ctx.font = "20px Arial";
     this.ctx.fillStyle = "white";
-    this.ctx.fillText("Press Enter", 150, 200);
+    this.ctx.fillText("The Monster Dungeon Game", 50, 100);
+    this.ctx.font = "10px Arial";
+    this.ctx.fillText("Press Enter to Begin", 125, 200);
     this.ctx.restore();
   }
   score() {

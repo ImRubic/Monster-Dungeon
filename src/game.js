@@ -43,6 +43,12 @@ export default class Game {
     this.cd;
 
     this.menuLoad();
+    this.volume = 0.6;
+    this.death_audio = new Audio("death.wav");
+    this.mon_audio = new Audio("monsterHit.wav");
+    this.player_audio = new Audio("playerHit.wav");
+    this.item_audio = new Audio("obtainItem.wav");
+    this.potion_audio = new Audio("potionDrink.wav");
 
     //Key handler
     window.onkeydown = this.handleKeyDown.bind(this);
@@ -89,6 +95,9 @@ export default class Game {
           if(this.cd === 0) {
             this.cd = this.aSpeed;
             var dead = mon.dealDamage(damage);
+            var sound = this.player_audio.cloneNode();
+        		sound.volume = this.volume-0.2;
+        		sound.play();
             if(dead) {
               this.dropPotion(mon);
               this.clearEdata();
@@ -152,13 +161,22 @@ export default class Game {
           switch(idata.type) {
             case "armor":
               text = this.equipArmor(idata);
+              var sound = this.item_audio.cloneNode();
+          		sound.volume = this.volume;
+          		sound.play();
               break;
             case "weapon":
               text = this.equipWeapon(idata);
+              var sound = this.item_audio.cloneNode();
+          		sound.volume = this.volume;
+          		sound.play();
               break;
             case "potion":
               text = "You drank a poition and gained " + idata.value + " health!";
               this.player.drinkPotion(idata.value);
+              var sound = this.potion_audio.cloneNode();
+          		sound.volume = this.volume;
+          		sound.play();
               this.potion.splice(this.potion.indexOf(itemObj), 1);
             break;
           }
@@ -370,6 +388,9 @@ export default class Game {
     });
   }
   respawn() {
+    var sound = this.death_audio.cloneNode();
+		sound.volume = this.volume;
+		sound.play();
     this.clearEdata();
     this.roomN = {
       roomX: 1,
@@ -386,6 +407,11 @@ export default class Game {
     var ppos = this.player.getPosition();
     this.monsters.forEach((mon) => {
       var damage = mon.update(ppos, this.monsters);
+      if(damage > 0) {
+        var sound = this.mon_audio.cloneNode();
+    		sound.volume = this.volume;
+    		sound.play();
+      }
       var respawn = this.player.dealDamage(damage);
       if(respawn) {
         this.respawn();

@@ -14,7 +14,7 @@ canvas {
   width: 500px;
   height: 500px;
   margin: 20px;
-  border: 1px solid black;
+  border: 2px solid white;
   image-rendering: pixelated;
 }
 
@@ -51,17 +51,25 @@ h1 {
   width: 400px;
   font: arial;
   font-size: 20px;
+}
+
+#conH {
   top: 50px;
   left: 800px;
 }
 
-#message2 {
-  top: 560px;
-  left: 50px;
+#objH {
+  top: 400px;
+  left: 800px;
 }
 
-#message3 {
-  top: 600px;
+#Objectives {
+  top: 425px;
+  left: 760px;
+}
+
+#message2 {
+  top: 560px;
   left: 50px;
 }
 

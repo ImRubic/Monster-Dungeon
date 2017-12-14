@@ -9,47 +9,55 @@ import Room from './room';
 
 export default class Game {
   constructor(width, height, context) {
+
+    //Game Varaibles
     this.width = width;
     this.height = height;
     this.ctx = context;
-    this.input = {
-      dX: 0,
-      dY: 0,
-    };
+    this.state = "Menu";
+
+    //Input Varaibles
+    this.input;
+    this.roomN;
+    this.attack = false;
+
+    //Game State
     this.over = false;
-    this.tilemap = new Tilemap(data);
-    this.player = new Player(1,1, this.tilemap, this.ctx);
-    this.room = new Room(1,4, this.tilemap, this.ctx);
+
+    //Object Varaibles
+    this.tilemap;
+    this.player;
+    this.room;
     this.monsters = [];
-    this.weapons = [];
-    this.armor = [];
-    this.potion;
-    this.item;
-    this.bossCount = 3;
-    this.roomN = {
-      roomX: 1,
-      roomY: 4
-    }
-    this.equip = {
-      weapon: 1,
-      armor: 0,
-    }
-    this.aSpeed = 10;
-    this.cd = 0;
+    this.weapons = undefined;
+    this.armor = undefined;
+    this.potion = [];
+    this.item = [];
 
-    this.data2 = new Uint16Array(data.layers[1].data);
-    setTimeout(() => {
-      this.score();
-    }, 10);
+    //Counter Varaibles
+    this.bossCount;
+    this.equip;
 
-    document.getElementById("message2").textContent = "Find the key to the castle";
+    //Attack Speed varaibles
+    this.aSpeed;
+    this.cd;
 
+    this.menuLoad();
+
+    //Key handler
     window.onkeydown = this.handleKeyDown.bind(this);
     window.onkeyup =  this.handleKeyUp.bind(this);
 
-
+    //Game Loop
     this.loop = this.loop.bind(this);
     this.interval = setInterval(this.loop, 100);
+  }
+  menuLoad() {
+    this.ctx.save();
+    this.ctx.font = "10px Arial";
+    this.ctx.fillStyle = "white";
+    this.ctx.fillText("Press Enter", 150, 200);
+    this.ctx.restore();
   }
   score() {
     var pdata = this.player.getScore();
@@ -92,91 +100,119 @@ export default class Game {
     });
   }
   dropPotion(mon) {
-    if(!this.item) {
       var rand = Math.floor(Math.random() * (100 - 1)) + 1;
       rand += mon.damage;
       if(rand > 74) {
-        if(rand > 90) var z = new Item(item.potion2, this.tilemap, this.ctx, "potion");
-        else var z = new Item(item.potion, this.tilemap, this.ctx, "potion");
-        this.potion = z;
-        this.item = z;
-        this.potion.setLocation(mon.x, mon.y);
-        this.potion.render();
+        if(rand > 90) var z = new Item(item.potion[1], this.tilemap, this.ctx, "potion");
+        else var z = new Item(item.potion[0], this.tilemap, this.ctx, "potion");
+        this.potion.push(z);
+        this.item.push(z);
+        z.setLocation(mon.x, mon.y);
+        z.render();
       }
-    }
   }
   clearEdata() {
-    document.getElementById("mhealth").textContent = "";
-    document.getElementById("mdamage").textContent = "";
-    document.getElementById("message2").textContent = "";
-    document.getElementById("message3").textContent = "";
+    var temp = ["mhealth", "mdamage", "message2"];
+
+    for(var i = 0; i<temp.length; i++) {
+      document.getElementById(temp[i]).textContent = "";
+    }
   }
-  itemPickup() {
-    if(this.item) {
-    var idata = this.item.getData();
-    var ppos = this.player.getPosition();
+  equipArmor(idata) {
     var text = "";
 
-      if(idata.x === ppos.x && idata.y === ppos.y) {
-        if(idata.type === "armor") {
-          if(this.equip.armor < idata.value) {
-            this.equip.armor = idata.value;
-            text = "You picked up a stronger piece of armor!";
-          } else text = "You picked up a weaker piece of armor and discarded it!";
-          this.armor.pop();
-          this.player.setArmor(this.equip.armor);
+    if(this.equip.armor < idata.value) {
+      this.equip.armor = idata.value;
+      text = "You picked up a stronger piece of armor!";
+    } else text = "You picked up a weaker piece of armor and discarded it!";
+    this.armor = undefined;
+    this.player.setArmor(this.equip.armor);
+    return text;
+  }
+  equipWeapon(idata) {
+    var text = "";
+
+    if(this.equip.weapon < idata.value) {
+      this.equip.weapon = idata.value;
+      text = "You picked up a stronger weapon!";
+    } else text = "You picked up a weaker weapon and discarded it!";
+    this.weapons = undefined;
+    this.player.setWeapon(this.equip.weapon);
+    return text;
+  }
+  itemPickup() {
+    this.item.forEach((itemObj) => {
+      var idata = itemObj.getData();
+      var ppos = this.player.getPosition();
+      var text = "";
+
+        if(idata.x === ppos.x && idata.y === ppos.y) {
+          switch(idata.type) {
+            case "armor":
+              text = this.equipArmor(idata);
+              break;
+            case "weapon":
+              text = this.equipWeapon(idata);
+              break;
+            case "potion":
+              text = "You drank a poition and gained " + idata.value + " health!";
+              this.player.drinkPotion(idata.value);
+              this.potion.splice(this.potion.indexOf(itemObj), 1);
+            break;
+          }
+          document.getElementById("message2").textContent = text;
+          itemObj.delete(this.roomN);
+          this.item.splice(this.item.indexOf(itemObj), 1);
         }
-        else if(idata.type === "weapon"){
-          if(this.equip.weapon < idata.value) {
-            this.equip.weapon = idata.value;
-            text = "You picked up a stronger weapon!";
-          } else text = "You picked up a weaker weapon and discarded it!";
-          this.weapons.pop();
-          this.player.setWeapon(this.equip.weapon);
-        }
-        else if(idata.type === "potion"){
-          text = "You drank a poition and gained " + this.potion.value + " health!";
-          this.player.drinkPotion(this.potion.value);
-          this.potion = undefined;
-        }
-        document.getElementById("message3").textContent = text;
-        this.item.delete(this.roomN);
-        this.item = undefined;
-      }
-    }
+    });
   }
   handleKeyDown(event) {
     event.preventDefault();
+    if(this.state === "Game"){
       switch(event.key){
         case 'a':
         case 'ArrowLeft':
           this.input.dX = -1;
           this.input.dY = 0;
+          this.attack = false;
           break;
         case 'd':
         case 'ArrowRight':
           this.input.dX = 1;
           this.input.dY = 0;
+          this.attack = false;
           break;
         case 'w':
         case 'ArrowUp':
           this.input.dX = 0;
           this.input.dY = -1;
+          this.attack = false;
           break;
         case 's':
         case 'ArrowDown':
           this.input.dX = 0;
           this.input.dY = 1;
+          this.attack = false;
           break;
         case 'z':
-            this.attackEnemy();
+            this.attack = true;
           break;
         case 'x':
+            this.attack = false;
             this.itemPickup();
           break;
       }
+    } else if(this.state === "Menu"){
+      switch(event.key){
+        case 'Enter':
+          this.state = "Game";
+          this.gameStart();
+          break;
+      }
+    }
   }
   handleKeyUp(event) {
+    if(this.state === "Game") {
     event.preventDefault();
         switch(event.key){
           case 'a':
@@ -195,30 +231,86 @@ export default class Game {
             if(this.input.dY === 1) this.input.dY = 0;
             break;
         }
+      }
   }
   gameStart() {
 
+    //Input Varaibles
+    this.input = {
+      dX: 0,
+      dY: 0,
+    };
+    this.roomN = {
+      roomX: 1,
+      roomY: 4
+    }
+
+    //Game State
+    this.over = false;
+
+    //Object Varaibles
+    this.tilemap = new Tilemap();
+    this.player = new Player(1,1, this.tilemap, this.ctx);
+
+    setTimeout(() => {
+      this.room = new Room(this.roomN.roomX,this.roomN.roomY, this.tilemap, this.ctx);
+    }, 100);
+
+    this.monsters = [];
+    this.weapons = undefined;
+    this.armor = undefined;
+    this.potion = [];
+    this.item = [];
+
+    //Counter Varaibles
+    this.bossCount = 3;
+    this.equip = {
+      weapon: 1,
+      armor: 0,
+    }
+
+    //Attack Speed varaibles
+    this.aSpeed = 3;
+    this.cd = 0;
+
+    this.textStart();
+    this.ctx.clearRect(0, 0, this.width, this.height);
+  }
+  textStart() {
+    setTimeout(() => {
+      this.score();
+    }, 10);
+    document.getElementById("objH").textContent = "Objectives";
+    document.getElementById("boss1").textContent = "Find the key to the castle!";
   }
   gameOver() {
     document.getElementById("message2").textContent = "You lost all your lives! Game Over!";
     this.over= true;
+    this.state = "Over";
   }
   gameWon() {
-    document.getElementById("message2").textContent = "You won!";
+    document.getElementById("message2").textContent = "";
     this.over = true;
+    this.state = "Won";
   }
   bossDefeat() {
     this.bossCount--;
     switch(this.bossCount) {
       case 2:
         this.tilemap.boss1();
-        document.getElementById("message2").textContent = "You've obtained a key to the castle!";
+        document.getElementById("boss1").textContent = "You've obtained a key to the castle!";
+        document.getElementById("boss1").style.color = "gray";
+        document.getElementById("boss2").textContent = "Find the key to the dungeon!";
         break;
       case 1:
       this.tilemap.boss2();
-      document.getElementById("message2").textContent = "You've obtained a key to the dungeon!";
+      document.getElementById("boss2").textContent = "You've obtained a key to the dungeon!";
+      document.getElementById("boss2").style.color = "gray";
+      document.getElementById("boss3").textContent = "Locate and defeat the final boss!";
         break;
       case 0:
+        document.getElementById("boss3").style.color = "gray";
+        document.getElementById("boss3").textContent = "You've defeated the final boss! Well Done!";
         this.gameWon();
         break;
     }
@@ -226,53 +318,54 @@ export default class Game {
   monsterC() {
     var x = this.roomN.roomX;
     var y = this.roomN.roomY;
-    this.monsters.forEach((mon) => {
-      this.monsters.pop();
-    });
 
-    if (monster.monsters0[y][x][0] !== null) {
-      var id = monster.monsters0[y][x][0];
+    this.monsters = [];
+
+    monster.monsters0[y][x].forEach((monN) => {
+      var id = monN;
       monster.monsters.forEach((mon) => {
-            if(id === mon.id) {
-              this.monsters.push(new Monster(mon, this.tilemap, this.ctx));
-            }
-          });
-    }
+        if(id === mon.id) {
+          this.monsters.push(new Monster(mon, this.roomN, this.tilemap, this.ctx));
+        }
+      });
+    });
   }
   itemC(){
     var x = this.roomN.roomX;
     var y = this.roomN.roomY;
     var z;
 
-    this.armor.forEach((arm) => {
-      this.armor.pop();
-    });
-    this.weapons.forEach((weap) => {
-      this.weapons.pop();
-    });
-    this.potion = undefined;
+    this.armor = undefined;
+    this.weapons = undefined;
+    this.potion = [];
+    this.item = [];
 
-    if (item.item0[y][x][0] !== null) {
+    item.item0[y][x].forEach((id) => {
       var id = item.item0[y][x][0];
 
       item.weapons.forEach((weap) => {
             if(id === weap.id) {
               z = new Item(weap, this.tilemap, this.ctx, "weapon");
-              this.weapons.push(z);
+              this.weapons = z;
             }
           });
+
       item.armor.forEach((arm) => {
             if(id === arm.id) {
               z = new Item(arm, this.tilemap, this.ctx, "armor");
-              this.armor.push(z);
+              this.armor = z;
             }
           });
-      if(id === item.potion2.id) {
-        z = new Item(item.potion2, this.tilemap, this.ctx, "potion");
-        this.potion = z;
-      }
-        this.item = z;
-    }
+
+      item.potion.forEach((pot) => {
+        if(id === pot.id) {
+          z = new Item(item.potion[1], this.tilemap, this.ctx, "potion");
+          this.potion.push(z);
+        }
+      });
+
+      this.item.push(z);
+    });
   }
   respawn() {
     this.clearEdata();
@@ -281,8 +374,8 @@ export default class Game {
       roomY: 4
     }
     this.monsters = [];
-    this.weapons = [];
-    this.armor = [];
+    this.weapons = undefined;
+    this.armor = undefined;
     this.room.update(this.roomN);
     document.getElementById("message2").textContent = "You died!";
     if(this.player.getScore().life === 0) this.gameOver();
@@ -290,7 +383,7 @@ export default class Game {
   monsterD() {
     var ppos = this.player.getPosition();
     this.monsters.forEach((mon) => {
-      var damage = mon.update(ppos, this.room.getRoom());
+      var damage = mon.update(ppos, this.monsters);
       var respawn = this.player.dealDamage(damage);
       if(respawn) {
         this.respawn();
@@ -298,6 +391,10 @@ export default class Game {
     });
   }
   update() {
+    if(this.attack) {
+      this.attackEnemy();
+    }
+    if(this.state !== "Menu") {
     var roomN2 = this.player.update(this.input, this.roomN, this.monsters);
 
     if (this.roomN.roomX !== roomN2.roomX || this.roomN.roomY !== roomN2.roomY) {
@@ -309,29 +406,44 @@ export default class Game {
     }
 
     this.monsterD();
-
     this.score();
-
+  }
   }
   render() {
+    if(this.state !== "Menu") {
     this.ctx.save();
-    this.armor.forEach((arm) => {
-      arm.render();
+    if(this.armor) this.armor.render();
+    if(this.weapons) this.weapons.render();
+    this.potion.forEach((pot) => {
+      pot.render();
     });
-    this.weapons.forEach((weap) => {
-      weap.render();
-    });
-    if(this.potion) this.potion.render();
     this.monsters.forEach((mon) => {
       mon.render();
     });
     this.player.render();
     this.ctx.restore();
   }
+  }
   loop() {
     if(!this.over) {
       this.update();
       this.render();
+    }
+    else if(this.state === "Over"){
+      this.ctx.save();
+      this.ctx.clearRect(0, 0, this.width, this.height);
+      this.ctx.font = "10px Arial";
+      this.ctx.fillStyle = "white";
+      this.ctx.fillText("Game Over!", 150, 200);
+      this.ctx.restore();
+    }
+    else {
+      this.ctx.save();
+      this.ctx.clearRect(0, 0, this.width, this.height);
+      this.ctx.font = "10px Arial";
+      this.ctx.fillStyle = "white";
+      this.ctx.fillText("Game Won!", 150, 200);
+      this.ctx.restore();
     }
   }
 }

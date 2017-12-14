@@ -6,7 +6,7 @@ export default class Player {
     this.y = y;
     this.ctx = ctx;
     this.tilemap = tilemap;
-    this.health = 1000;
+    this.health = 100;
     this.life = 3;
     this.weaponPower = 1;
     this.armor = 0;
@@ -36,7 +36,7 @@ export default class Player {
     if(this.armor < damage) this.health -= (damage-this.armor);
     if(this.health <= 0) {
       this.life--;
-      this.health = 10;
+      this.health = 100;
       this.x = 1;
       this.y = 1;
       if(this.life <= 0) {
